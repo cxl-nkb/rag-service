@@ -132,11 +132,15 @@ class Retriever:
             fused = sorted(scores.items(), key=lambda x: -x[1])
 
         # 阈值过滤 + 组装结果（锁外组装，减少持锁时间）
+        # id→idx 映射：并发 ingest 更新窗口下 chroma 可能返回新 id（_doc_ids 未及更新），未命中直接跳过不崩溃
+        id_to_idx = {did: i for i, did in enumerate(self._doc_ids)}
         hits = []
         for did, score in fused:
             if score < threshold:
                 break
-            idx = self._doc_ids.index(did)
+            idx = id_to_idx.get(did)
+            if idx is None:
+                continue
             c = self._chunks[idx]
             hits.append({
                 "text": c["text"], "file": c["file"], "section": c["section"],
