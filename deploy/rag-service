@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# rag-service 入口脚本：定位安装目录/venv，启动 uvicorn（路径无关）
+# 环境变量（可被 /etc/rag-service/env 覆盖）：
+#   RAG_HOME   - 应用安装目录（默认 /opt/rag-service）
+#   RAG_CONFIG - 配置文件（默认 /etc/rag-service/config.yaml）
+#   RAG_DATA   - 数据目录（默认 /var/lib/rag-service）
+#   RAG_HOST / RAG_PORT - 监听地址/端口
+set -euo pipefail
+
+RAG_HOME="${RAG_HOME:-/opt/rag-service}"
+RAG_CONFIG="${RAG_CONFIG:-/etc/rag-service/config.yaml}"
+RAG_DATA="${RAG_DATA:-/var/lib/rag-service}"
+HOST="${RAG_HOST:-127.0.0.1}"
+PORT="${RAG_PORT:-8931}"
+
+export RAG_CONFIG RAG_DATA
+
+if [ ! -x "$RAG_HOME/venv/bin/python" ]; then
+    echo "错误: 未找到 $RAG_HOME/venv/bin/python —— 请先运行 install.sh" >&2
+    exit 1
+fi
+if [ ! -f "$RAG_CONFIG" ]; then
+    echo "错误: 配置文件不存在 $RAG_CONFIG" >&2
+    exit 1
+fi
+
+exec "$RAG_HOME/venv/bin/python" -m uvicorn main:app \
+    --app-dir "$RAG_HOME/app" \
+    --host "$HOST" --port "$PORT"

@@ -1,0 +1,24 @@
+[Unit]
+Description=RAG Service (Chroma + BGE + BM25 hybrid retrieval)
+After=network.target
+
+[Service]
+Type=simple
+User=rag-service
+Group=rag-service
+EnvironmentFile=/etc/rag-service/env
+ExecStart=/usr/local/bin/rag-service
+Restart=on-failure
+RestartSec=5
+# 日志走 journald：journalctl -u rag-service -f
+StandardOutput=journal
+StandardError=journal
+# 安全加固（生产推荐）
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/rag-service
+
+[Install]
+WantedBy=multi-user.target

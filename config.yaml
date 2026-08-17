@@ -1,0 +1,70 @@
+# ============================================================
+# RAG Service V2 配置
+# 数据源 / 格式 / 检索 / 自动更新 / 服务 全部在此配置
+# 修改后重启服务生效（后续支持热重载）
+# ============================================================
+
+# ---- 数据源（可自定义路径，可多源，可混合格式）----
+datasources:
+  - name: llm-wiki-methods        # 数据源标识（用于统计/日志）
+    path: /root/ubuntu-manage/llm-wiki/docs
+    format: markdown              # markdown | docx | text
+    include: ["*.md"]             # 通配符（可选，默认全收）
+    exclude: ["*.bak*"]           # 排除通配符（可选）
+
+  - name: system-wiki
+    path: /root/ubuntu-manage/chat/llm-wiki-data/system-wiki   # 测试副本（生产请指向生产机 llmwiki 路径）
+    format: markdown
+    exclude:
+      - ".llm-wiki"
+      - ".obsidian"
+      - "raw"
+      - "assets"
+
+  # 示例：docx 数据源（启用时取消注释并改路径）
+  # - name: business-docs
+  #   path: /data/business
+  #   format: docx
+  #   include: ["*.docx"]
+
+# ---- 检索 ----
+search:
+  top_k_default: 3        # 默认返回条数
+  threshold: 0.15         # rrf 分数粗过滤阈值
+  rrf_k_vector: 10        # 向量路 RRF k（越小越看重前排）
+  rrf_k_bm25: 3           # BM25 路 RRF k（越小越看重精确词命中）
+  topic_filter: true      # 是否启用主题域过滤（挡明显无关查询）
+
+# ---- Embedding 模型 ----
+embedding:
+  model: BAAI/bge-small-zh-v1.5
+  dim: 512
+  hf_endpoint: https://hf-mirror.com
+  disable_xet: true
+
+# ---- 自动更新（可开关，三档模式）----
+auto_watch:
+  enabled: false           # 总开关
+  mode: polling           # polling（轮询，默认稳定）| watchdog（实时监听）| manual（仅手动/接口触发）
+  interval_sec: 60        # 轮询间隔（mode=polling 时生效）
+  debounce_sec: 5         # watchdog 防抖秒数（mode=watchdog 时生效，避免写入中途触发）
+  incremental: true       # 哈希比对增量处理（只处理变更文件）
+
+# ---- 服务 ----
+server:
+  host: 127.0.0.1         # 本机访问；如需局域网 agent 调用改 0.0.0.0
+  port: 8931
+  workers: 1              # 单进程（Chroma 单进程约束）
+  log_level: info
+
+# ---- 资源限制（控制内存/CPU 占用）----
+resources:
+  embedding_threads: 2    # onnxruntime 推理线程数（默认用满所有核会高内存峰值；2=省内存，8=更快）
+  memory_max: "2G"        # systemd MemoryMax 硬限制（install.sh 生成 Drop-in 时写入）
+  embedding_batch: 32     # 批量 embedding 批次大小（降低峰值内存）
+
+# ---- 数据目录 ----
+data:
+  chroma_dir: /root/ubuntu-manage/chat/rag-service/data/chroma
+  chunks_json: /root/ubuntu-manage/chat/rag-service/data/chunks.json
+  manifest: /root/ubuntu-manage/chat/rag-service/data/manifest.json

@@ -1,0 +1,21 @@
+# ============================================================
+# 评测集（用于 /eval 接口）
+# 每条：query + expect（期望命中的文件名关键字，命中任一即算对）
+# ============================================================
+eval_set:
+  - query: "什么是常绿笔记"
+    expect: "Andy Matuschak"
+  - query: "笔记为什么要用自己的话写"
+    expect: "Andy Matuschak"
+  - query: "Tiago Forte 的 PARA 方法"
+    expect: "Tiago Forte"
+  - query: "怎么让笔记密度更高"
+    expect: "Andy Matuschak"
+  - query: "wiki 集成方案 v2 的目标"
+    expect: "v2"
+  - query: "Simon Willison 的工作流理念"
+    expect: "Simon Willison"
+  - query: "什么时候该用 JIT"
+    expect: "Tiago Forte"
+  - query: "笔记系统里 Projects 和 Areas 的区别"
+    expect: "Tiago Forte"

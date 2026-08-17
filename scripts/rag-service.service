@@ -1,0 +1,17 @@
+[Unit]
+Description=RAG Service V2 (Chroma + BGE + BM25 hybrid retrieval)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ubuntu-manage/chat/rag-service/app
+ExecStart=/root/ubuntu-manage/chat/venv-rag/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8931
+Restart=on-failure
+RestartSec=5
+# 日志走 journald：journalctl -u rag-service -f
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
