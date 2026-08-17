@@ -81,7 +81,7 @@ class Retriever:
     def load_chunks(self, chunks: List[dict]) -> None:
         """从内存 chunks 重建 BM25（由 ingest 调用）；空语料跳过（rank_bm25 对空集除零）"""
         self._chunks = chunks
-        self._doc_ids = [f"chunk-{i:03d}" for i in range(len(chunks))]
+        self._doc_ids = [c["id"] for c in chunks]   # 与 chroma id（{file_hash8}-{idx}）统一，RRF 才能真正融合
         self._bm25 = BM25Okapi([cjk_tokenize(c["text"]) for c in chunks]) if chunks else None
 
     def load_from_chunks_json(self, path: str) -> None:
